@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/MDAR_AcuityServiceAPI/MDAR_AcuityServiceAPI/obj/Release
+/MDAR_AcuityServiceAPI/MDAR_AcuityServiceAPI/bin
+/MDAR_AcuityServiceAPI/MDAR_AcuityServiceAPI/Properties/PublishProfiles
+/MDAR_AcuityServiceAPI/.vs/MDAR_AcuityServiceAPI/v15/sqlite3/storage.ide
