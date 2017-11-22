@@ -11,7 +11,7 @@ namespace MDAR_AcuityServiceAPI.Classes
 {
     public class ApiManager
     {
-        private readonly Logging _serviceHistory = new Logging();
+        public Logging _logger;
 
         public HttpStatusCode Status { get; set; }
         public string Message { get; set; }
@@ -19,7 +19,7 @@ namespace MDAR_AcuityServiceAPI.Classes
         public IEnumerable<Appointment> GetAppointments(List<Calendar> calendars, DateTime date)
         {
             var appointments = new List<Appointment>();
-            _serviceHistory.LogMessage("Attempting retrieve Appointments...");
+            _logger.LogMessage("Attempting retrieve Appointments...");
             foreach (var calendar in calendars)
             {
                 var request =
@@ -31,7 +31,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                 {
                     using (var response = request.GetResponse() as HttpWebResponse)
                     {
-                        _serviceHistory.LogMessage($"Request HttpCode: {response?.StatusCode}");
+                        _logger.LogMessage($"Request HttpCode: {response?.StatusCode}");
                         var responseStream = response?.GetResponseStream();
                         if (responseStream == null)
                         {
@@ -40,13 +40,13 @@ namespace MDAR_AcuityServiceAPI.Classes
                         using (var reader = new StreamReader(responseStream))
                         {
                             var receiveContent = reader.ReadToEnd();
-                            appointments.AddRange(HttpUtils.DeserializeAppointments(receiveContent, _serviceHistory));
+                            appointments.AddRange(HttpUtils.DeserializeAppointments(receiveContent, _logger));
                         }
                     }
                 }
                 catch (WebException e)
                 {
-                    _serviceHistory.LogMessage(e.Message);
+                    _logger.LogMessage(e.Message);
                     var errorResponse = e.Response;
                     using (var stream = errorResponse.GetResponseStream())
                     {
@@ -54,7 +54,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                         {
                             var reader = new StreamReader(stream);
                             var errorText = reader.ReadToEnd();
-                            _serviceHistory.LogMessage(errorText);
+                            _logger.LogMessage(errorText);
                         }
                     }
                 }
@@ -65,7 +65,7 @@ namespace MDAR_AcuityServiceAPI.Classes
         public IEnumerable<Calendar> GetCalendars()
         {
             IEnumerable<Calendar> calendars = new List<Calendar>();
-            _serviceHistory.LogMessage("Attempting retrieve Calendars...");
+            _logger.LogMessage("Attempting retrieve Calendars...");
             var request =
                 (HttpWebRequest) WebRequest.Create(ConfigurationManager.AppSettings["CalendarsApi"]);
             request.Headers.Add("Authorization", HttpUtils.GetBasicCredentials());
@@ -73,7 +73,7 @@ namespace MDAR_AcuityServiceAPI.Classes
             {
                 using (var response = request.GetResponse() as HttpWebResponse)
                 {
-                    _serviceHistory.LogMessage($"Request HttpCode: {response?.StatusCode}");
+                    _logger.LogMessage($"Request HttpCode: {response?.StatusCode}");
 
                     var responseStream = response?.GetResponseStream();
                     if (responseStream == null)
@@ -83,13 +83,13 @@ namespace MDAR_AcuityServiceAPI.Classes
                     using (var reader = new StreamReader(responseStream))
                     {
                         var content = reader.ReadToEnd();
-                        calendars = HttpUtils.DeserializeCalendars(content, _serviceHistory);
+                        calendars = HttpUtils.DeserializeCalendars(content, _logger);
                     }
                 }
             }
             catch (WebException e)
             {
-                _serviceHistory.LogMessage(e.Message);
+                _logger.LogMessage(e.Message);
                 var errorResponse = e.Response;
                 using (var stream = errorResponse.GetResponseStream())
                 {
@@ -97,7 +97,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                     {
                         var reader = new StreamReader(stream);
                         var errorText = reader.ReadToEnd();
-                        _serviceHistory.LogMessage(errorText);
+                        _logger.LogMessage(errorText);
                     }
                 }
             }
@@ -107,7 +107,7 @@ namespace MDAR_AcuityServiceAPI.Classes
         public Appointment GetAppointment(string id)
         {
             var appointment = new Appointment();
-            _serviceHistory.LogMessage($"Attempting retrieve Appointment {id}...");
+            _logger.LogMessage($"Attempting retrieve Appointment {id}...");
 
             var request =
                 (HttpWebRequest) WebRequest.Create($"{ConfigurationManager.AppSettings["AppointmentsApi"]}/{id}");
@@ -116,7 +116,7 @@ namespace MDAR_AcuityServiceAPI.Classes
             {
                 using (var response = request.GetResponse() as HttpWebResponse)
                 {
-                    _serviceHistory.LogMessage($"Appointment Request HttpCode: {response?.StatusCode}");
+                    _logger.LogMessage($"Appointment Request HttpCode: {response?.StatusCode}");
                     var responseStream = response?.GetResponseStream();
                     if (responseStream == null)
                     {
@@ -125,13 +125,13 @@ namespace MDAR_AcuityServiceAPI.Classes
                     using (var reader = new StreamReader(responseStream))
                     {
                         var receiveContent = reader.ReadToEnd();
-                        appointment = HttpUtils.DeserializeAppointment(receiveContent, _serviceHistory);
+                        appointment = HttpUtils.DeserializeAppointment(receiveContent, _logger);
                     }
                 }
             }
             catch (WebException e)
             {
-                _serviceHistory.LogMessage(e.Message);
+                _logger.LogMessage(e.Message);
                 var errorResponse = e.Response;
                 using (var stream = errorResponse.GetResponseStream())
                 {
@@ -139,7 +139,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                     {
                         var reader = new StreamReader(stream);
                         var errorText = reader.ReadToEnd();
-                        _serviceHistory.LogMessage(errorText);
+                        _logger.LogMessage(errorText);
                     }
                 }
             }
@@ -149,7 +149,7 @@ namespace MDAR_AcuityServiceAPI.Classes
         public IEnumerable<Availability> GetAvailabilities(Calendar calendar, DateTime date, string appointmentTypeId)
         {
             var availabilities = new List<Availability>();
-            _serviceHistory.LogMessage(
+            _logger.LogMessage(
                 $"Attempting retrieve Availabilities for {calendar.Name} calendar on Date({date})...");
 
             var request =
@@ -160,7 +160,7 @@ namespace MDAR_AcuityServiceAPI.Classes
             {
                 using (var response = request.GetResponse() as HttpWebResponse)
                 {
-                    _serviceHistory.LogMessage($"Request HttpCode: {response?.StatusCode}");
+                    _logger.LogMessage($"Request HttpCode: {response?.StatusCode}");
                     var responseStream = response?.GetResponseStream();
                     if (responseStream == null)
                     {
@@ -170,13 +170,13 @@ namespace MDAR_AcuityServiceAPI.Classes
                     {
                         var receiveContent = reader.ReadToEnd();
                         availabilities.AddRange(
-                            HttpUtils.DeserializeAvailabilities(receiveContent, _serviceHistory));
+                            HttpUtils.DeserializeAvailabilities(receiveContent, _logger));
                     }
                 }
             }
             catch (WebException e)
             {
-                _serviceHistory.LogMessage(e.Message);
+                _logger.LogMessage(e.Message);
                 var errorResponse = e.Response;
                 using (var stream = errorResponse.GetResponseStream())
                 {
@@ -184,7 +184,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                     {
                         var reader = new StreamReader(stream);
                         var errorText = reader.ReadToEnd();
-                        _serviceHistory.LogMessage(errorText);
+                        _logger.LogMessage(errorText);
                     }
                 }
             }
@@ -209,7 +209,7 @@ namespace MDAR_AcuityServiceAPI.Classes
         public void CreateAppointmentsForAvailabilities(Calendar calendar, IEnumerable<Availability> availabilities,
             string appointmentTypeId)
         {
-            _serviceHistory.LogMessage(
+            _logger.LogMessage(
                 $"Attempting create appointments for availabilities for Calendar : ({calendar.Name})...");
             foreach (var availability in availabilities)
             {
@@ -225,7 +225,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                                "\"appointmentTypeID\": " + appointmentTypeId + "," +
                                "\"firstName\": \"Adam\"," +
                                "\"lastName\": \"McTest\"," +
-                               "\"email\": \"rusch1981@hotmail.com\"," +
+                               "\"email\": \"mdaracuity@hotmail.com\"," +
                                "\"phone\": \"5555555555\"";
 
                     var requirmentIds = ConfigurationManager.AppSettings["RequiredAppointmentElementIds"]
@@ -234,7 +234,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                         .Split(',');
                     if (requirmentIds.Length != requirmentValues.Length)
                     {
-                        _serviceHistory.LogMessage("Error!  Throwing exception");
+                        _logger.LogMessage("Error!  Throwing exception");
                         throw new Exception(
                             $"Configuration Exception.  RequiredAppointmentElementIds: {requirmentIds} " +
                             $"RequiredAppointmentElementValues: {requirmentValues} do not have the matching length Value");
@@ -250,19 +250,19 @@ namespace MDAR_AcuityServiceAPI.Classes
                         }
                     }
                     json += "}";
-                    _serviceHistory.LogMessage(json);
+                    _logger.LogMessage(json);
                     streamWriter.Write(json);
                     streamWriter.Flush();
                     try
                     {
                         using (var response = request.GetResponse() as HttpWebResponse)
                         {
-                            _serviceHistory.LogMessage($"Request HttpCode: {response?.StatusCode}");
+                            _logger.LogMessage($"Request HttpCode: {response?.StatusCode}");
                         }
                     }
                     catch (WebException e)
                     {
-                        _serviceHistory.LogMessage(e.Message);
+                        _logger.LogMessage(e.Message);
                         var errorResponse = e.Response;
                         using (var stream = errorResponse.GetResponseStream())
                         {
@@ -270,7 +270,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                             {
                                 var reader = new StreamReader(stream);
                                 var errorText = reader.ReadToEnd();
-                                _serviceHistory.LogMessage(errorText);
+                                _logger.LogMessage(errorText);
                             }
                         }
                     }

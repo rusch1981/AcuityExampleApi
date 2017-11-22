@@ -56,9 +56,7 @@ namespace MDAR_AcuityServiceAPI.Models
         {
             if (IsValid) return _asString;
 
-            throw new Exception(
-                "Notification is not a valid instance of a notification.  The current values of this noticiation are:  " +
-                $"action={Action}&id={Id}&calendarID={CalendarId}&appointmentTypeID={AppointmentTypeId}");
+            return null;
         }
 
         #endregion

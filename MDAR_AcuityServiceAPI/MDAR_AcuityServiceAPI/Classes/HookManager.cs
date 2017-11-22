@@ -12,8 +12,14 @@ namespace MDAR_AcuityServiceAPI.Classes
 {
     public class HookManager
     {
-        private readonly ApiManager _apiManager = new ApiManager();
-        private readonly Logging _serviceHistory = new Logging();
+        private ApiManager _apiManager = new ApiManager();
+        private Logging _logger;
+
+        public void Setlogger(Logging logger)
+        {
+            _logger = logger;
+            _apiManager._logger = logger;
+        }
 
         public bool IsvalidRequest { get; private set; }
 
@@ -42,7 +48,7 @@ namespace MDAR_AcuityServiceAPI.Classes
 
         private void MaximumDailyAppointmentsRoutine(Notification notification)
         {
-            _serviceHistory.LogMessage(
+            _logger.LogMessage(
                 $"Beginning Maximum Daily Appointments Routine (Max: {ConfigurationManager.AppSettings["MaxDailyAppointments"]})...");
             var appointment = _apiManager.GetAppointment(notification.Id);
 
@@ -59,7 +65,7 @@ namespace MDAR_AcuityServiceAPI.Classes
             var appointments = _apiManager.GetAppointments(calendars, appointment.Datetime).ToList();
             if (appointments.Count >= int.Parse(ConfigurationManager.AppSettings["MaxDailyAppointments"]))
             {
-                _serviceHistory.LogMessage(
+                _logger.LogMessage(
                     $"Maximum Daily Appointments met for {appointment.Datetime}. (Appt.Count: {appointments.Count})");
 
                 var appointmentTypeIds = ConfigurationManager.AppSettings["AppointmentTypeIds"].Split(',');
@@ -79,11 +85,11 @@ namespace MDAR_AcuityServiceAPI.Classes
                         }
                     }
                 }
-                _serviceHistory.LogMessage("MaximumDailyAppointmentsRoutine completed successfully.");
+                _logger.LogMessage("MaximumDailyAppointmentsRoutine completed successfully.");
             }
             else
             {
-                _serviceHistory.LogMessage($"Maximum Daily Appointments not met. (Appt.Count: {appointments.Count})");
+                _logger.LogMessage($"Maximum Daily Appointments not met. (Appt.Count: {appointments.Count})");
             }
             StatusCode = HttpStatusCode.OK;
             Message = "OK";
@@ -93,14 +99,15 @@ namespace MDAR_AcuityServiceAPI.Classes
         {
             if (requestBody == null)
             {
-                _serviceHistory.LogMessage("Post containing a NULL body recieved");
+                _logger.LogMessage("Post containing a NULL body recieved");
                 IsvalidRequest = false;
                 StatusCode = HttpStatusCode.BadRequest;
                 Message = "Request was null";
                 return;
             }
-            _serviceHistory.LogMessage($"Notication recieved: {requestBody}");
-            _serviceHistory.LogMessage("Authenticating...");
+
+            _logger.LogMessage($"Notication recieved: {requestBody}");
+            _logger.LogMessage("Authenticating...");
 
             var encoding = new ASCIIEncoding();
             var key = encoding.GetBytes(ConfigurationManager.AppSettings["Password"]);
@@ -121,13 +128,13 @@ namespace MDAR_AcuityServiceAPI.Classes
                                             $"MyToken: {Environment.NewLine}{token}{Environment.NewLine}" +
                                             $"UserHostAddress:  {httpContext.Request.UserHostAddress}{Environment.NewLine}" +
                                             $"UserHostName: {httpContext.Request.UserHostName}{Environment.NewLine}";
-                _serviceHistory.LogFatalError(new Exception(authenticationMessage));
+                _logger.LogFatalError(new Exception(authenticationMessage));
                 IsvalidRequest = false;
                 StatusCode = HttpStatusCode.Unauthorized;
                 Message = "Unauthorized";
                 return;
             }
-            _serviceHistory.LogMessage("Authentication Successful!");
+            _logger.LogMessage("Authentication Successful!");
             StatusCode = HttpStatusCode.OK;
             Message = "OK";
             IsvalidRequest = true;
@@ -135,7 +142,7 @@ namespace MDAR_AcuityServiceAPI.Classes
 
         public void Terminate()
         {
-            _serviceHistory.LogMessage(
+            _logger.LogMessage(
                 $"Sending HttpResponse and Terminating Process.{Environment.NewLine}{Environment.NewLine}");
         }
     }

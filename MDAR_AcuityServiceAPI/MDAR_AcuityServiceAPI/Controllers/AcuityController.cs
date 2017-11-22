@@ -20,11 +20,15 @@ namespace MDAR_AcuityServiceAPI.Controllers
             try
             {
                 var notification = new Notification(form);
+
+                _responseManager.Setlogger(_serviceHistory);
                 _responseManager.ValidateRequest(HttpContext.Current, notification.GetString());
+
                 if (!_responseManager.IsvalidRequest)
                 {
                     return Request.CreateResponse(_responseManager.StatusCode, _responseManager.Message);
                 }
+
                 _responseManager.ProcessTasks(notification);
 
 

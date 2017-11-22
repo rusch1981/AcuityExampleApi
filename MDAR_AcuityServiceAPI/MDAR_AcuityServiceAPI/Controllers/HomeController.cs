@@ -1,4 +1,8 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Web.Mvc;
+using System.Web.WebPages;
+using MDAR_AcuityServiceAPI.Classes;
+using MDAR_AcuityServiceAPI.Utils;
 
 namespace MDAR_AcuityServiceAPI.Controllers
 {
