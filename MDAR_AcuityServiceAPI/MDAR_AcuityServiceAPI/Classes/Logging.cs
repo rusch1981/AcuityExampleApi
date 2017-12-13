@@ -108,6 +108,11 @@ namespace MDAR_AcuityServiceAPI.Classes
             _serviceLog.Append(Environment.NewLine);
         }
 
+        public void LogLog(string responseMessage)
+        {
+            EmailUtil.SendLogEmail(responseMessage + Environment.NewLine + _serviceLog.ToString());
+        }
+
         public void LogFatalError(Exception exception)
         {
             LogMessage(Environment.NewLine
@@ -116,7 +121,7 @@ namespace MDAR_AcuityServiceAPI.Classes
                        + "Intervnal Server Error");
             LogMessage(exception.ToString());
 
-            EmailUtil.SendEmail(exception, _serviceLog.ToString());
+            EmailUtil.SendExceptionEmail(exception, _serviceLog.ToString());
         }
     }
 }

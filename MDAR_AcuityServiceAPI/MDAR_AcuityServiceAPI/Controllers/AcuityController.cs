@@ -36,7 +36,11 @@ namespace MDAR_AcuityServiceAPI.Controllers
 
                 var message = Request.CreateResponse(_responseManager.StatusCode, _responseManager.Message);
                 message.Headers.Location = new Uri(Request.RequestUri.ToString());
+
+                _serviceHistory.LogLog(_responseManager.Message);
+
                 return message;
+
             }
             catch (Exception e)
             {
